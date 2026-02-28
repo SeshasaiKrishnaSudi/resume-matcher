@@ -2,20 +2,20 @@ import os
 import json
 import PyPDF2
 import streamlit as st
-from google import genai
 
-# Works on your computer AND on Streamlit Cloud
 try:
     GOOGLE_API_KEY = st.secrets["GOOGLE_API_KEY"]
-except:
+except Exception:
     from dotenv import load_dotenv
     load_dotenv()
     GOOGLE_API_KEY = os.getenv("GOOGLE_API_KEY")
 
-client = genai.Client(api_key=GOOGLE_API_KEY)
+import google.generativeai as genai
+genai.configure(api_key=GOOGLE_API_KEY)
+model = genai.GenerativeModel("gemini-1.5-flash")
 
 
-def extract_text_from_pdf(uploaded_file) -> str:
+def extract_text_from_pdf(uploaded_file):
     try:
         reader = PyPDF2.PdfReader(uploaded_file)
         text = ""
@@ -27,7 +27,7 @@ def extract_text_from_pdf(uploaded_file) -> str:
         return ""
 
 
-def analyze_resume(resume_text: str, job_description: str) -> dict:
+def analyze_resume(resume_text, job_description):
     prompt = f"""
 You are an expert HR consultant and ATS specialist.
 Compare the resume and job description below.
@@ -48,10 +48,7 @@ JOB DESCRIPTION:
 {job_description}
 """
     try:
-        response = client.models.generate_content(
-            model="gemini-1.5-flash",
-            contents=prompt
-        )
+        response = model.generate_content(prompt)
         raw = response.text.strip()
 
         if raw.startswith("```"):
@@ -73,13 +70,10 @@ JOB DESCRIPTION:
     except Exception as e:
         print(f"Gemini API error: {e}")
         return None
-```
 
----
 
-## Then Update `requirements.txt` Too:
-```
+## Step 2 — Make sure `requirements.txt` looks like this:
 streamlit
-google-genai
+google-generativeai
 PyPDF2
 python-dotenv
