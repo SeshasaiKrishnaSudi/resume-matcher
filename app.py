@@ -17,7 +17,7 @@ st.markdown("""
     .score-high  { background: #d4edda; color: #155724; border: 2px solid #28a745; }
     .score-mid   { background: #fff3cd; color: #856404; border: 2px solid #ffc107; }
     .score-low   { background: #f8d7da; color: #721c24; border: 2px solid #dc3545; }
-    .section-card { background: white; padding: 1.2rem 1.5rem; border-radius: 10px;
+    .section-card { background: black; padding: 1.2rem 1.5rem; border-radius: 10px;
                     margin: 0.8rem 0; box-shadow: 0 2px 6px rgba(0,0,0,0.07); }
     .tag { display: inline-block; background: #e8f4f8; color: #0077b6;
            padding: 4px 10px; border-radius: 20px; margin: 3px; font-size: 0.85rem; }
@@ -80,7 +80,6 @@ if analyze_btn:
             st.markdown(f'<div class="score-box {score_class}">{score} / 100</div>', unsafe_allow_html=True)
 
             st.markdown("### ✅ Matching Skills Found")
-            st.markdown('<div class="section-card">', unsafe_allow_html=True)
             matching = result.get("matching_skills", [])
             if matching:
                 tags = " ".join([f'<span class="tag">✔ {s}</span>' for s in matching])
@@ -90,7 +89,6 @@ if analyze_btn:
             st.markdown('</div>', unsafe_allow_html=True)
 
             st.markdown("### ❌ Missing Keywords / Skills")
-            st.markdown('<div class="section-card">', unsafe_allow_html=True)
             missing = result.get("missing_skills", [])
             if missing:
                 tags = " ".join([f'<span class="tag tag-missing">✘ {s}</span>' for s in missing])
