@@ -107,6 +107,3 @@ if analyze_btn:
                 st.markdown("### 📝 Overall Summary")
                 st.markdown(f'<div class="section-card">{summary}</div>', unsafe_allow_html=True)
 
-# ─── Footer ──────────────────────────────────────────────────────────────────
-st.divider()
-st.markdown("<center><small>Built with ❤️ using Streamlit & Groq AI</small></center>", unsafe_allow_html=True)
