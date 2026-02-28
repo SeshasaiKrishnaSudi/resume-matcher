@@ -2,53 +2,46 @@ import os
 import json
 import PyPDF2
 import streamlit as st
+from groq import Groq
+from dotenv import load_dotenv
+
+load_dotenv()
 
 try:
-    GOOGLE_API_KEY = st.secrets["GOOGLE_API_KEY"]
+    GROQ_API_KEY = st.secrets["GROQ_API_KEY"]
 except Exception:
-    from dotenv import load_dotenv
-    load_dotenv()
-    GOOGLE_API_KEY = os.getenv("GOOGLE_API_KEY")
+    GROQ_API_KEY = os.getenv("GROQ_API_KEY")
 
-import google.generativeai as genai
-genai.configure(api_key=GOOGLE_API_KEY)
-model = genai.GenerativeModel("gemini-2.0-flash")
+client = Groq(api_key=GROQ_API_KEY)
 
 
-def extract_text_from_pdf(uploaded_file) -> str:
-    """Extract all text from an uploaded PDF file."""
+def extract_text_from_pdf(uploaded_file):
     try:
-        reader = PyPDF2.PdfReader(uploaded_file)
+        import io
+        bytes_data = uploaded_file.read()
+        reader = PyPDF2.PdfReader(io.BytesIO(bytes_data))
         text = ""
         for page in reader.pages:
             text += page.extract_text() or ""
         return text.strip()
     except Exception as e:
-        print(f"PDF extraction error: {e}")
+        st.error(f"PDF Error: {e}")
         return ""
 
 
-def analyze_resume(resume_text: str, job_description: str) -> dict:
-    """
-    Send resume + job description to Gemini and get structured analysis back.
-    Returns a dict with: score, matching_skills, missing_skills, suggestions, summary
-    """
-
+def analyze_resume(resume_text, job_description):
     prompt = f"""
-You are an expert HR consultant and ATS (Applicant Tracking System) specialist.
-
-Carefully compare the resume and job description provided below.
-
-Return your analysis ONLY as a valid JSON object with this exact structure:
+You are an expert HR consultant and ATS specialist.
+Compare the resume and job description below.
+Return ONLY a valid JSON object like this:
 {{
   "score": <integer from 0 to 100>,
-  "matching_skills": [<list of up to 6 matching skills or keywords>],
-  "missing_skills": [<list of up to 6 missing skills or keywords>],
-  "suggestions": [<list of exactly 3 actionable suggestions to improve the resume>],
-  "summary": "<2-3 sentence overall summary of the match>"
+  "matching_skills": [<up to 6 matching skills>],
+  "missing_skills": [<up to 6 missing skills>],
+  "suggestions": [<exactly 3 actionable suggestions>],
+  "summary": "<2-3 sentence summary>"
 }}
-
-Do NOT include any explanation, markdown, or text outside the JSON.
+No explanation, no markdown, just JSON.
 
 RESUME:
 {resume_text}
@@ -56,29 +49,29 @@ RESUME:
 JOB DESCRIPTION:
 {job_description}
 """
-
     try:
-        response = model.generate_content(prompt)
-        raw = response.text.strip()
+        response = client.chat.completions.create(
+            model="llama-3.1-8b-instant",
+            messages=[{"role": "user", "content": prompt}]
+        )
+        raw = response.choices[0].message.content.strip()
 
-        # Clean up if Gemini wraps in markdown code block
         if raw.startswith("```"):
             raw = raw.split("```")[1]
             if raw.startswith("json"):
                 raw = raw[4:]
         raw = raw.strip()
 
-        result = json.loads(raw)
-        return result
+        return json.loads(raw)
 
     except json.JSONDecodeError:
         return {
             "score": 0,
             "matching_skills": [],
             "missing_skills": [],
-            "suggestions": ["Could not parse AI response. Please try again."],
-            "summary": "An error occurred during analysis. Please try again."
+            "suggestions": ["Could not parse response. Please try again."],
+            "summary": "An error occurred. Please try again."
         }
     except Exception as e:
-        print(f"Gemini API error: {e}")
+        st.error(f"Groq Error: {e}")
         return None
