@@ -3,7 +3,7 @@ from utils import extract_text_from_pdf, analyze_resume
 
 # ─── Page Config ────────────────────────────────────────────────────────────
 st.set_page_config(
-    page_title="AI Resume Matcher",
+    page_title="Resume Matcher",
     page_icon="📄",
     layout="centered"
 )
@@ -27,8 +27,8 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 # ─── Header ─────────────────────────────────────────────────────────────────
-st.markdown('<div class="title">📄 AI Resume Matcher</div>', unsafe_allow_html=True)
-st.markdown('<div class="subtitle">Upload your resume & paste a job description — get instant AI feedback!</div>', unsafe_allow_html=True)
+st.markdown('<div class="title">📄 Resume Matcher</div>', unsafe_allow_html=True)
+st.markdown('<div class="subtitle">Upload your resume & paste a job description — get instant feedback!</div>', unsafe_allow_html=True)
 st.divider()
 
 # ─── Inputs ─────────────────────────────────────────────────────────────────
